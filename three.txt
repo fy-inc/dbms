@@ -408,3 +408,26 @@ SELECT COUNT(CustomerID), Country
 FROM Customers
 GROUP BY Country
 HAVING COUNT(CustomerID) > 5;
+
+SELECT * FROM Orders WHERE OrderDate='2008-11-11'
+
+CREATE TABLE Persons (
+    Personid AUTOINCREMENT PRIMARY KEY,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int
+);
+
+CREATE VIEW [Products Above Average Price] AS
+SELECT ProductName, Price
+FROM Products
+WHERE Price > (SELECT AVG(Price) FROM Products);
+
+CREATE VIEW view_name AS
+SELECT column1, column2.....
+FROM table_name
+WHERE [condition];
+
+DROP VIEW view_name;
+
+datetime
