@@ -1,0 +1,433 @@
+1. Creating table
+
+CREATE TABLE employee (
+	employeeNumber BIGINT NOT NULL,
+	firstName VARCHAR(250) NOT NULL,
+	officeCode INT(10) NOT NULL,
+	reportsTo BIGINT NULL,
+	jobTitle VARCHAR(250) NOT NULL,
+	PRIMARY KEY (employeeNumber),
+	FOREIGN KEY (reportsTo) REFERENCES employee(employeeNumber) ON DELETE NO ACTION ON UPDATE CASCADE
+) Engine = InnoDB ;
+
+2. Inserting values in a table
+
+INSERT INTO product_details (productCode, productName,quantity,buyPrice)
+VALUES
+('s10','Harley Davidson',7933,48.81),
+('s11','Alpine Renault',7305,98.58),
+('s12','Moto Guzzi',6625,68.99),
+('s13','Eagle Drag Bike',5582,91.02),
+('s14','Alfa Romeo GTA',3252,85.68);
+
+3. Loading data from a .txt file into a created schema
+
+Load data local INFILE 'C:/sidhu/hello.txt' into table table_name;
+
+4. Inner join
+
+SELECT c.salesRep FROM customer c INNER JOIN employee e ON e.employeeNumber=c.salesRep;
+
+5. indexing
+
+create index index_name on table_name(col1,col2...);
+
+select * from table_name use index(index_name) where .....;
+
+
+6. PL/SQL code sytax :
+1) loop
+DECLARE 
+   i number(1); 
+   j number(1); 
+BEGIN 
+   << outer_loop >> 
+   FOR i IN 1..3 LOOP 
+      << inner_loop >> 
+      FOR j IN 1..3 LOOP 
+         dbms_output.put_line('i is: '|| i || ' and j is: ' || j); 
+      END loop inner_loop; 
+   END loop outer_loop; 
+END; 
+/
+
+
+2) Function
+DECLARE 
+   a number; 
+   b number; 
+   c number; 
+FUNCTION findMax(x IN number, y IN number)  
+RETURN number 
+IS 
+    z number; 
+BEGIN 
+   IF x > y THEN 
+      z:= x; 
+   ELSE 
+      Z:= y; 
+   END IF;  
+   RETURN z; 
+END; 
+BEGIN 
+   a:= 23; 
+   b:= 45;  
+   c := findMax(a, b); 
+   dbms_output.put_line(' Maximum of (23,45): ' || c); 
+END; 
+/ 
+
+3)recursive finction
+
+DECLARE 
+   num number; 
+   factorial number;  
+   
+FUNCTION fact(x number) 
+RETURN number  
+IS 
+   f number; 
+BEGIN 
+   IF x=0 THEN 
+      f := 1; 
+   ELSE 
+      f := x * fact(x-1); 
+   END IF; 
+RETURN f; 
+END;  
+
+BEGIN 
+   num:= 6; 
+   factorial := fact(num); 
+   dbms_output.put_line(' Factorial '|| num || ' is ' || factorial); 
+END; 
+/
+
+4) prime checker
+
+declare
+	
+-- declare variable n, i 
+-- and temp of datatype number 
+n number;			 
+i number;			 
+temp number;		 
+	
+begin
+	
+-- Here we Assigning 10 into n 
+n := 13;				 
+	
+-- Assigning 2 to i 
+i := 2; 
+
+-- Assigning 1 to temp 
+temp := 1; 
+
+-- loop from i = 2 to n/2 
+for i in 2..n/2 
+	loop 
+		if mod(n, i) = 0 
+		then
+			temp := 0; 
+			exit; 
+		end if; 
+	end loop; 
+	
+	if temp = 1 
+	then
+		dbms_output.put_line('true'); 
+	else
+		dbms_output.put_line('false'); 
+	end if; 
+end;		 
+
+-- Program End 
+
+
+5) palindrome
+
+DECLARE
+
+	-- Declared variables are s, l, t . 
+	-- These variables are of same data type VARCHAR. 
+	s VARCHAR2(10) := 'abccba'; 
+	l VARCHAR2(20); 
+	t VARCHAR2(10); 
+BEGIN
+	FOR i IN REVERSE 1..Length(s) LOOP 
+		l := Substr(s, i, 1); 
+
+		-- here || are used for concatenation of string. 
+		t := t 
+			||''
+			||l; 
+	END LOOP; 
+
+	IF t = s THEN
+	dbms_output.Put_line(t 
+						||''
+						||' is palindrome'); 
+	ELSE
+	dbms_output.Put_line(t 
+						||''
+						||' is not palindrome'); 
+	END IF; 
+END; 
+
+-- Program End 
+
+
+
+
+
+
+
+
+1. Write a trigger to ensure that no employee of age less than 25 can be inserted in the database.
+
+delimiter $$
+CREATE TRIGGER  Check_age  BEFORE INSERT ON employee 
+FOR EACH ROW
+BEGIN
+IF NEW.age < 25 THEN
+SIGNAL SQLSTATE '45000'
+SET MESSAGE_TEXT = 'ERROR: 
+         AGE MUST BE ATLEAST 25 YEARS!';
+END IF;
+END; $$
+delimiter; 
+
+2. Create a trigger which will work before deletion in employee table and create a duplicate copy of the record in another table employee_backup.
+
+create table employee_backup (employee_no int, 
+      employee_name varchar(40), job varchar(40), 
+      hiredate date, salary int, 
+      primary key(employee_no)); 
+
+delimiter $$
+CREATE TRIGGER Backup BEFORE DELETE ON employee 
+FOR EACH ROW
+BEGIN
+INSERT INTO employee_backup
+VALUES (OLD.employee_no, OLD.name, 
+        OLD.job, OLD.hiredate, OLD.salary);
+END; $$
+delimiter; 
+
+3. Write a trigger to count number of new tupples inserted using each insert statement.
+
+Declare count int
+Set count=0;
+delimiter $$
+CREATE TRIGGER Count_tupples 
+             AFTER INSERT ON employee 
+FOR EACH ROW
+BEGIN
+SET count = count + 1;
+END; $$
+delimiter;
+
+
+4. Random example :
+
+
+create trigger stud_marks 
+before INSERT 
+on 
+Student 
+for each row 
+set new.total = new.subj1 + new.subj2 + new.subj3, new.per = new.total * 60 / 100;
+
+Above SQL statement will create a trigger in the student database in which whenever subjects marks are entered, before inserting this data into the database, trigger will compute those two values and insert with the entered values. i.e.,
+
+mysql> insert into Student values(0, "ABCDE", 20, 20, 20, 0, 0); 
+Query OK, 1 row affected (0.09 sec) 
+
+mysql> select * from Student; 
++-----+-------+-------+-------+-------+-------+------+ 
+| tid | name  | subj1 | subj2 | subj3 | total | per  | 
++-----+-------+-------+-------+-------+-------+------+ 
+| 100 | ABCDE |    20 |    20 |    20 |    60 |   36 | 
++-----+-------+-------+-------+-------+-------+------+ 
+1 row in set (0.00 sec)
+
+TXT
+
+CREATE TABLE employee (
+	employeeNumber BIGINT NOT NULL,
+	firstName VARCHAR(250) NOT NULL,
+	officeCode INT(10) NOT NULL,
+	reportsTo BIGINT NULL,
+	jobTitle VARCHAR(250) NOT NULL,
+	PRIMARY KEY (employeeNumber),
+	FOREIGN KEY (reportsTo) REFERENCES employee(employeeNumber) ON DELETE NO ACTION ON UPDATE CASCADE
+);
+
+
+CREATE TABLE customer(
+	customerNumber BIGINT NOT NULL,
+	customerName VARCHAR(250) NOT NULL,
+	phone VARCHAR(25) NOT NULL,
+	city VARCHAR(25) NOT NULL,
+	country VARCHAR(25) NOT NULL,
+	salesRep BIGINT NULL,
+	PRIMARY KEY (customerNumber),
+	FOREIGN KEY (salesRep) REFERENCES employee(employeeNumber) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE orders (
+	orderNumber BIGINT NOT NULL,
+	orderDate DATE NOT NULL,
+	customerNumber BIGINT NOT NULL,
+	PRIMARY KEY (orderNumber),
+	FOREIGN KEY (customerNumber) REFERENCES customer(customerNumber) ON DELETE CASCADE ON UPDATE CASCADE
+);
+CREATE TABLE product_details(
+	productCode VARCHAR(250) NOT NULL,
+	productName VARCHAR(250) NOT NULL,
+	PRIMARY KEY (productCode)
+);
+
+CREATE TABLE orderDetails (
+	orderNumber BIGINT NOT NULL,
+	productCode VARCHAR(250) NOT NULL,
+	price INT NOT NULL,
+	FOREIGN KEY (orderNumber) REFERENCES orders(orderNumber) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (productCode) REFERENCES product_details(productCode) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+INSERT INTO employee (
+employeeNumber,
+firstName,
+officeCode,
+reportsTo,
+jobTitle
+)
+VALUES
+(1002,'Diane',1,NULL,'President'),
+(1056,'Mary',1,1002,'VP Sales'),
+(1088,'William',6,1056,'Sales Manager (APAC)'),
+(1102,'Gerard',4,1056,'Sale Manager (EMEA)'),
+(1143,'Anthony',1,1056,'Sales Manager (NA)'),
+(1166,'Leslie',1,1143,'Sales Rep'),
+(1188,'Julie',2,1143,'Sales Rep'),
+(1216,'Steve',2,1143,'Sales Rep'),
+(1286,'Foon Yue',3,1143,'Sales Rep'),
+(1323,'George',3,1143,'Sales Rep'),
+(1370,'Gerard',4,1102,'Sales Rep'),
+(1401,'Pamela',4,1102,'Sales Rep'),
+(1504,'Barry',7,1102,'Sales Rep'),
+(1612,'Peter',6,1088,'Sales Rep'),
+(1702,'Martin',4,1102,'Sales Rep');
+
+INSERT INTO customer
+(customerNumber,customerName,phone,city,country,salesRep)
+VALUES
+(121,'Baane Mini Imports','07-98 9555','Stavern','Norway',1504),
+(128,'Blauer See Auto, Co.','+49 69 66 90 2555','Frankfurt','Germany',1504),
+(131,'Land of Toys Inc.','2125557818','NYC','USA',1323),
+(141,'Euro+ Shopping Channel','(91) 555 94 44','Madrid','Spain',1370),
+(145,'Danish Wholesale Imports','31 12 3555','Kobenhavn','Denmark',1401),
+(181,'Vitachrome Inc.','2125551500','NYC','USA',1286),
+(278,'Rovelli Gifts','035-640555','Bergamo','Italy',1401),
+(363,'Online Diecast Creations Co.','6035558647','Nashua','USA',1216),
+(385,'Cruz & Sons Co.','+63 2 555 3587','Makati City','Philippines',1612),
+(486,'Motor Mint Distributors Inc.','2155559857','Philadelphia','USA',1323);
+
+INSERT INTO orders (orderNumber,orderDate,customerNumber)
+VALUES
+(10100,'2003-01-06',363),
+(10101,'2003-01-09',128),
+(10102,'2003-01-10',181),
+(10103,'2003-01-29',121),
+(10104,'2003-01-31',141),
+(10105,'2003-02-11',145),
+(10106,'2003-02-17',278),
+(10107,'2003-02-24',131),
+(10108,'2003-03-03',385),
+(10109,'2003-03-10',486),
+(10110,'2003-03-18',181);
+
+ALTER TABLE product_details ADD COLUMN( quantity INT);
+ALTER TABLE product_details ADD COLUMN( buyPrice DECIMAL(18,2));
+
+INSERT INTO product_details (productCode, productName,quantity,buyPrice)
+VALUES
+('s10','Harley Davidson',7933,48.81),
+('s11','Alpine Renault',7305,98.58),
+('s12','Moto Guzzi',6625,68.99),
+('s13','Eagle Drag Bike',5582,91.02),
+('s14','Alfa Romeo GTA',3252,85.68);
+ALTER TABLE orderDetails MODIFY price DECIMAL(18,2);
+
+INSERT INTO orderDetails (orderNumber,productCode,price)
+VALUES
+(10100,'s10',136.00),
+(10100,'s11',55.09),
+(10101,'s10',32.53),
+(10101,'s13',44.35),
+(10102,'s12',95.55),
+(10102,'s14',43.13),
+(10103,'s11',63.35),
+(10103,'s12',94.07),
+(10104,'s10',114.59),
+(10104,'s11',53.31);
+
+TXT
+
+DELETE FROM customer WHERE customerNumber=145;
+DELETE FROM orderDetails WHERE orderNumber=10100;
+UPDATE employee SET employeeNumber=1286 WHERE employeeNumber=1002;
+ALTER TABLE orders DROP FOREIGN KEY orders_ibfk_1;
+ALTER TABLE Orders ADD FOREIGN KEY (customerNumber) REFERENCES customer(customerNumber) ON DELETE CASCADE ON UPDATE CASCADE;
+UPDATE customer SET customerNumber=161 WHERE customerNumber=121;
+
+SELECT * FROM employee e1 INNER JOIN employee e2 ON e1.employeeNumber=e2.employeeNumber;
+SELECT DISTINCT(e1.employeeNumber),e2.* FROM employee e1 INNER JOIN employee e2 ON e1.employeeNumber=e2.employeeNumber;
+SELECT c.salesRep FROM customer c INNER JOIN employee e ON e.employeeNumber=c.salesRep;
+SELECT e1.employeeNumber FROM employee e1 WHERE employeeNumber NOT IN (SELECT salesRep FROM customer);
+SELECT firstName FROM employee WHERE officeCode=1 AND jobTitle='VP Sales';
+SELECT SUM(buyPrice) FROM product_details WHERE productName='Moto Guzzi';
+SELECT e.firstName FROM employee e INNER JOIN customer c ON e.employeeNumber=c.salesRep  WHERE country='USA';
+
+SELECT column1, column2 FROM table_name ORDER BY column1, column2 ASC|DESC;
+
+SELECT COUNT(CustomerID), Country
+FROM Customers
+GROUP BY Country;
+
+
+SELECT COUNT(CustomerID), Country
+FROM Customers
+GROUP BY Country
+ORDER BY COUNT(CustomerID) DESC;
+
+
+SELECT COUNT(CustomerID), Country
+FROM Customers
+GROUP BY Country
+HAVING COUNT(CustomerID) > 5;
+
+SELECT * FROM Orders WHERE OrderDate='2008-11-11'
+
+CREATE TABLE Persons (
+    Personid AUTOINCREMENT PRIMARY KEY,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int
+);
+
+CREATE VIEW [Products Above Average Price] AS
+SELECT ProductName, Price
+FROM Products
+WHERE Price > (SELECT AVG(Price) FROM Products);
+
+CREATE VIEW view_name AS
+SELECT column1, column2.....
+FROM table_name
+WHERE [condition];
+
+DROP VIEW view_name;
+
+datetime
